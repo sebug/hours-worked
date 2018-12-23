@@ -118,6 +118,11 @@ function createMentionSalary(salary) {
     };
 }
 
+/**
+ * Returns a function that mentions the hours as well
+ * @param {Array<WorkTemplate>} template the template periods to search
+ * @returns {(sd: StructuredDate) => { date: StructuredDate, hoursWorked: Number }} the object mentioning hours
+ */
 function createMentionHours(template) {
     return function (sd) {
 	const correspondingPeriod = getMatchingPeriod(template, sd);
