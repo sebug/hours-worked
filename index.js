@@ -6,9 +6,24 @@ const startDate = getStartDate(template);
 const allDates = Array.from(datesUntilNow(template, startDate));
 const holidayFilter = createHolidayFilter(holidays);
 const datesExcludingHolidays = allDates.filter(holidayFilter);
+const mentionHours = createMentionHours(template);
+const datesWithHours = datesExcludingHolidays.map(mentionHours);
 
-for (let d of datesExcludingHolidays) {
-    console.log(d);
+for (let d of datesWithHours) {
+    console.log(JSON.stringify(d));
+}
+
+function createMentionHours(template) {
+    return function (sd) {
+	const correspondingPeriod = getMatchingPeriod(template, sd);
+	if (!correspondingPeriod) {
+	    throw new Error("Expected to have found a corresponding period for " + JSON.stringify(sd));
+	}
+	return {
+	    date: sd,
+	    hoursWorked: correspondingPeriod.hoursPerWeek
+	};
+    };
 }
 
 
