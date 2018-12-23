@@ -13,10 +13,33 @@ const mentionSalary = createMentionSalary(getSalary());
 const groupedByMonthWithSalary = groupedByMonth.map(mentionSalary);
 
 for (let d of groupedByMonthWithSalary) {
-    delete d.concernedDates;
     console.log(formatLine(d));
 }
 
+/**
+ * A structured date
+ * @typedef {{ year: Number, month: Number, day: Number}} StructuredDate
+ */
+/**
+ * A date together with hours worked
+ * @typedef {{ date: StructuredDate, hoursWorked: Number }} DateWithHours
+ */
+/**
+ * A month group of hours worked
+ * @typedef {{ year: Number, month: Number, hoursWorked: Number, concernedDates: Array<StructuredDate> }} MonthHoursWorkedGroup
+ */
+
+/**
+ * A salary group, containing information about a month worked, with charges excluded salary as well
+ * @typedef {{ year: Number, month: Number, hoursWorked: Number, monthlySalaryChargesExcluded: Number}} SalaryGroup
+ */
+
+
+/**
+ * Formats a line of salary group (for inclusion in e-mails, excel, ...)
+ * @param {SalaryGroup} salaryGroup the group to format
+ * @returns {String} the formatted line
+ */
 function formatLine(salaryGroup) {
     const year = '' + salaryGroup.year;
     let month = '' + salaryGroup.month;
@@ -27,6 +50,11 @@ function formatLine(salaryGroup) {
     return monthString + '\t' + salaryGroup.hoursWorked + '\t' + salaryGroup.monthlySalaryChargesExcluded;
 }
 
+/**
+ * Groups dates with hours entries by month
+ * @param {Array<DateWithHours>} datesWithHours
+ * @returns {IterableIterator<MonthHoursWorkedGroup>} the months with hours worked
+ */
 function* groupByMonth(datesWithHours) {
     if (!datesWithHours || !datesWithHours.length) {
 	return;
@@ -56,6 +84,11 @@ function* groupByMonth(datesWithHours) {
     yield currentMonth;
 }
 
+/**
+ * Creates a function that augments a MonthHoursWorkedGroup with the monthly salary
+ * @param {Array<SalaryPeriod>} salary the salary periods
+ * @returns {(monthGroup: MonthHoursWorkedGroup) => SalaryGroup} the function that augments a month group with the salary
+ */
 function createMentionSalary(salary) {
     return function (monthGroup) {
 	const sd = {
@@ -179,6 +212,15 @@ function getHolidays() {
     return JSON.parse(content);
 }
 
+/**
+ * A salary period
+ * @typedef {{ from: StructuredDate, to: StructuredDate?, salaryPerHour: Number }} SalaryPeriod
+ */
+
+/**
+ * Returns the salary periods
+ * @returns {Array<SalaryPeriod>} the array of salary periods
+ */
 function getSalary() {
     const content = fs.readFileSync('salary.json','utf-8');
     return JSON.parse(content);
