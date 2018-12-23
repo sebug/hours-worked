@@ -4,8 +4,12 @@
   "description": "Returns the hours worked per month of my household assistant",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "test": "echo \"Error: no test specified\" && exit 1"
+      "build": "tsc --allowJs --checkJs index.js --outDir dist"
   },
   "author": "Sebastian Gfeller",
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  }
 }

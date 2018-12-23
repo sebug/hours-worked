@@ -3,4 +3,6 @@ exceptions.json
 holidays.json
 salary.json
 formatted_report.txt
+node_modules
+dist
 
