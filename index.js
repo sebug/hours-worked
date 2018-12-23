@@ -2,8 +2,14 @@ const fs = require('fs');
 
 const template = getTemplate();
 const startDate = getStartDate(template);
-const firstPeriod = getMatchingPeriod(template, startDate);
-console.log(firstPeriod);
+const nextWeek = addWeek(startDate);
+console.log(nextWeek);
+
+function addWeek(sd) {
+    let nextWeek = new Date(dateFromStructured(sd));
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return structuredFromDate(nextWeek);
+}
 
 function getMatchingPeriod(template, sd) {
     for (let period of template) {
