@@ -2,8 +2,29 @@ const fs = require('fs');
 
 const template = getTemplate();
 const startDate = getStartDate(template);
-const nextWeek = addWeek(startDate);
-console.log(nextWeek);
+const allDates = Array.from(datesUntilNow(template, startDate));
+
+for (let d of allDates) {
+    console.log(d);
+}
+
+
+function* datesUntilNow(template, startDate) {
+    let d = startDate;
+    while (dateFromStructured(d) <= new Date()) {
+	yield d;
+
+	const currentPeriod = getMatchingPeriod(template, d);
+	const nextWeek = addWeek(d);
+	const nextPeriod = getMatchingPeriod(template, nextWeek);
+	if (currentPeriod === nextPeriod) {
+	    d = nextWeek;
+	} else {
+	    // moved to another period, take its start date
+	    d = nextPeriod.from;
+	}
+    }
+}
 
 function addWeek(sd) {
     let nextWeek = new Date(dateFromStructured(sd));
