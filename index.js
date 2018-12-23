@@ -1,10 +1,13 @@
 const fs = require('fs');
 
 const template = getTemplate();
+const holidays = getHolidays();
 const startDate = getStartDate(template);
 const allDates = Array.from(datesUntilNow(template, startDate));
+const holidayFilter = createHolidayFilter(holidays);
+const datesExcludingHolidays = allDates.filter(holidayFilter);
 
-for (let d of allDates) {
+for (let d of datesExcludingHolidays) {
     console.log(d);
 }
 
@@ -26,6 +29,13 @@ function* datesUntilNow(template, startDate) {
     }
 }
 
+function createHolidayFilter(holidays) {
+    return function (sd) {
+	const p = getMatchingPeriod(holidays, sd);
+	return !p; // true if not on holiday, false otherwise
+    };
+}
+
 function addWeek(sd) {
     let nextWeek = new Date(dateFromStructured(sd));
     nextWeek.setDate(nextWeek.getDate() + 7);
@@ -44,7 +54,6 @@ function getMatchingPeriod(template, sd) {
 	    }
 	}
     }
-    throw new Error('No period found for date ' + JSON.stringify(sd));
 }
 
 function advanceToWeekDay(date, weekDay) {
@@ -87,5 +96,10 @@ function getStartDate(template) {
 
 function getTemplate() {
     const content = fs.readFileSync('template.json','utf-8');
+    return JSON.parse(content);
+}
+
+function getHolidays() {
+    const content = fs.readFileSync('holidays.json','utf-8');
     return JSON.parse(content);
 }
