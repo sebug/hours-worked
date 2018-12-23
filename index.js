@@ -28,6 +28,18 @@ for (let d of groupedByMonthWithSalary) {
  * A month group of hours worked
  * @typedef {{ year: Number, month: Number, hoursWorked: Number, concernedDates: Array<StructuredDate> }} MonthHoursWorkedGroup
  */
+/**
+ * A holiday period
+ * @typedef {{ from: StructuredDate, to: StructuredDate? }} HolidayPeriod
+ */
+/**
+ * A work template
+ * @typedef {{ from: StructuredDate, to: StructuredDate?, weekDay: Number, hoursPerWeek: Number }} WorkTemplate
+ */
+/**
+ * A salary period
+ * @typedef {{ from: StructuredDate, to: StructuredDate?, salaryPerHour: Number }} SalaryPeriod
+ */
 
 /**
  * A salary group, containing information about a month worked, with charges excluded salary as well
@@ -120,6 +132,12 @@ function createMentionHours(template) {
 }
 
 
+/**
+ * Gets the structured dates until now
+ * @param {Array<WorkTemplate>} template the work periods
+ * @param {StructuredDate} startDate the date with which to start
+ * @returns {IterableIterator<StructuredDate>} the dates
+ */
 function* datesUntilNow(template, startDate) {
     let d = startDate;
     while (dateFromStructured(d) <= new Date()) {
@@ -137,6 +155,11 @@ function* datesUntilNow(template, startDate) {
     }
 }
 
+/**
+ * Returns a filter predicate that returns false when the structured date is a holiday
+ * @param {Array<HolidayPeriod>} holidays the holidays to take into account
+ * @returns {(sd: StructuredDate) => Boolean} the holiday filter predicate
+ */
 function createHolidayFilter(holidays) {
     return function (sd) {
 	const p = getMatchingPeriod(holidays, sd);
@@ -144,12 +167,22 @@ function createHolidayFilter(holidays) {
     };
 }
 
+/**
+ * @param {StructuredDate} sd the date to add a week to
+ * @returns {StructuredDate} the date with a week added
+ */
 function addWeek(sd) {
     let nextWeek = dateFromStructured(sd);
     nextWeek.setDate(nextWeek.getDate() + 7);
     return structuredFromDate(nextWeek);
 }
 
+/**
+ * Gets the matching period out of the template
+ * @param {Array<Object>} template the template to search the period in
+ * @param {StructuredDate} sd the date to look for
+ * @returns {Object} the found period
+ */
 function getMatchingPeriod(template, sd) {
     for (let period of template) {
 	if (valueOfStructured(period.from) <= valueOfStructured(sd)) {
@@ -164,6 +197,12 @@ function getMatchingPeriod(template, sd) {
     }
 }
 
+/**
+ * Advances the date to a specific week day
+ * @param {Date} date the date to advance
+ * @param {Number} weekDay the week day to advance to (1 = Monday)
+ * @returns {Date} the advanced date
+ */
 function advanceToWeekDay(date, weekDay) {
     if (date.getDay() === weekDay) {
 	return date;
@@ -173,12 +212,22 @@ function advanceToWeekDay(date, weekDay) {
     return advanceToWeekDay(tomorrow, weekDay);
 }
 
+/**
+ * Transforms a structured date into something that can be compared
+ * @param {StructuredDate} sd the structured date
+ * @returns {Number} the numerical representation of said structured date
+ */
 function valueOfStructured(sd) {
     return sd.year * 10000 + sd.month * 100 + sd.day;
 }
 
 // the global idea is to use JS dates as little as possible,
 // so we use the structured format { year, month, day }
+/**
+ * Converts a date into a structured date
+ * @param {Date} d the JS date to convert to a structured date
+ * @returns {StructuredDate} the structured date
+ */
 function structuredFromDate(d) {
     return {
 	year: d.getFullYear(),
@@ -187,12 +236,23 @@ function structuredFromDate(d) {
     };
 }
 
+/**
+ * Creates a JS date from a structured date
+ * @param {StructuredDate} d the structured date to convert
+ * @returns {Date} the resulting JS date
+ */
 function dateFromStructured(d) {
     return new Date(d.year, d.month - 1, d.day);
 }
 
+/**
+ * Gets the start date from a given list of periods
+ * @param {Array<WorkTemplate>} template an array of simple periods
+ * @returns {StructuredDate} the start date found in the periods
+ */
 function getStartDate(template) {
     const fromDates = template.map(t => advanceToWeekDay(dateFromStructured(t.from), t.weekDay)).map(structuredFromDate);
+    /** @type {StructuredDate} */
     let min = fromDates[0];
     for (let date of fromDates) {
 	if (valueOfStructured(date) < valueOfStructured(min)) {
@@ -202,20 +262,23 @@ function getStartDate(template) {
     return min;
 }
 
+/**
+ * Returns the work templates
+ * @returns {Array<WorkTemplate>} the work templates
+ */
 function getTemplate() {
     const content = fs.readFileSync('template.json','utf-8');
     return JSON.parse(content);
 }
 
+/**
+ * Returns the holiday periods
+ * @returns {Array<HolidayPeriod>} the array of holiday periods
+ */
 function getHolidays() {
     const content = fs.readFileSync('holidays.json','utf-8');
     return JSON.parse(content);
 }
-
-/**
- * A salary period
- * @typedef {{ from: StructuredDate, to: StructuredDate?, salaryPerHour: Number }} SalaryPeriod
- */
 
 /**
  * Returns the salary periods
