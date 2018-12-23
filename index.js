@@ -9,10 +9,12 @@ const datesExcludingHolidays = allDates.filter(holidayFilter);
 const mentionHours = createMentionHours(template);
 const datesWithHours = datesExcludingHolidays.map(mentionHours);
 const groupedByMonth = Array.from(groupByMonth(datesWithHours));
+const mentionSalary = createMentionSalary(getSalary());
+const groupedByMonthWithSalary = groupedByMonth.map(mentionSalary);
 
-for (let d of groupedByMonth) {
+for (let d of groupedByMonthWithSalary) {
     delete d.concernedDates;
-    console.log(JSON.stringify(d));
+    console.log(d);
 }
 
 function* groupByMonth(datesWithHours) {
@@ -42,6 +44,23 @@ function* groupByMonth(datesWithHours) {
 	}
     }
     yield currentMonth;
+}
+
+function createMentionSalary(salary) {
+    return function (monthGroup) {
+	const sd = {
+	    year: monthGroup.year,
+	    month: monthGroup.month,
+	    day: 1
+	};
+	const salaryPeriod = getMatchingPeriod(salary, sd);
+	return {
+	    year: monthGroup.year,
+	    month: monthGroup.month,
+	    hoursWorked: monthGroup.hoursWorked,
+	    monthlySalaryChargesExcluded: monthGroup.hoursWorked * salaryPeriod.salaryPerHour
+	};
+    };
 }
 
 function createMentionHours(template) {
@@ -147,5 +166,10 @@ function getTemplate() {
 
 function getHolidays() {
     const content = fs.readFileSync('holidays.json','utf-8');
+    return JSON.parse(content);
+}
+
+function getSalary() {
+    const content = fs.readFileSync('salary.json','utf-8');
     return JSON.parse(content);
 }
