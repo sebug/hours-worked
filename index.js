@@ -112,7 +112,7 @@ function createHolidayFilter(holidays) {
 }
 
 function addWeek(sd) {
-    let nextWeek = new Date(dateFromStructured(sd));
+    let nextWeek = dateFromStructured(sd);
     nextWeek.setDate(nextWeek.getDate() + 7);
     return structuredFromDate(nextWeek);
 }
