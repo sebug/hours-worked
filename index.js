@@ -14,7 +14,17 @@ const groupedByMonthWithSalary = groupedByMonth.map(mentionSalary);
 
 for (let d of groupedByMonthWithSalary) {
     delete d.concernedDates;
-    console.log(d);
+    console.log(formatLine(d));
+}
+
+function formatLine(salaryGroup) {
+    const year = '' + salaryGroup.year;
+    let month = '' + salaryGroup.month;
+    if (month.length === 1) {
+	month = '0' + month;
+    }
+    const monthString = year + '.' + month;
+    return monthString + '\t' + salaryGroup.hoursWorked + '\t' + salaryGroup.monthlySalaryChargesExcluded;
 }
 
 function* groupByMonth(datesWithHours) {
