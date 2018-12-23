@@ -8,9 +8,40 @@ const holidayFilter = createHolidayFilter(holidays);
 const datesExcludingHolidays = allDates.filter(holidayFilter);
 const mentionHours = createMentionHours(template);
 const datesWithHours = datesExcludingHolidays.map(mentionHours);
+const groupedByMonth = Array.from(groupByMonth(datesWithHours));
 
-for (let d of datesWithHours) {
+for (let d of groupedByMonth) {
+    delete d.concernedDates;
     console.log(JSON.stringify(d));
+}
+
+function* groupByMonth(datesWithHours) {
+    if (!datesWithHours || !datesWithHours.length) {
+	return;
+    }
+    let currentMonth = {
+	year: datesWithHours[0].date.year,
+	month: datesWithHours[0].date.month,
+	hoursWorked: 0,
+	concernedDates: []
+    };
+    // assumes the dates are ordered
+    for (let dateWithHours of datesWithHours) {
+	if (dateWithHours.date.year === currentMonth.year &&
+	    dateWithHours.date.month === currentMonth.month) {
+	    currentMonth.hoursWorked += dateWithHours.hoursWorked;
+	    currentMonth.concernedDates.push(dateWithHours.date);
+	} else {
+	    yield currentMonth;
+	    currentMonth = {
+		year: dateWithHours.date.year,
+		month: dateWithHours.date.month,
+		hoursWorked: dateWithHours.hoursWorked,
+		concernedDates: [ dateWithHours.date ]
+	    };
+	}
+    }
+    yield currentMonth;
 }
 
 function createMentionHours(template) {
